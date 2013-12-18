@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+	body {background-color:white;}
+</style>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js">
+</script>
+<script>
+	var Type;
+	var Url;
+	var Data;
+	var ContentType;
+	var DataType;
+	var ProcessData;	
+	var Question;
+	
+	function GetUser() {
+		$("#log").append("<p>Called GetUser</p>");
+		var userid = "1";
+		Type = "POST";
+		Url = "http://localhost:4270/Service1.svc/GetUser";
+		Data = '{"Id": "' + userid + '"}';
+		ContentType = "application/json; charset=utf-8";
+		DataType = "json"; 
+		varProcessData = true; 
+		CallService();
+	}
+	
+	function RegisterUser() {
+		$("#log").append("<p>Called RegisterUser</p>");
+		console.log(getCookie("username"));
+		var user = getCookie("username");
+		Type = "POST";
+		Url = "http://localhost:2867/Service1.svc/RegisterUser";
+		Data = '{"user": "' + user + '"}';
+		ContentType = "application/json; charset=utf-8";
+		DataType = "json"; 
+		varProcessData = true; 
+		CallService();
+	}
+	
+	function GetQuestion() {
+		$("#log").append("<p>Called GetQuestion</p>");
+		console.log(getCookie("username"));
+		var user = getCookie("username");
+		Type = "POST";
+		Url = "http://localhost:2867/Service1.svc/ThrowQuestion";
+		Data = '{"user": "' + user + '"}';
+		ContentType = "application/json; charset=utf-8";
+		DataType = "json"; 
+		varProcessData = true; 
+		CallService();
+	}
+	
+	function GetData() {
+		$("#log").append("<p>Called GetData</p>");
+		var value = "1";
+		Type = "POST";
+		Url = "http://localhost:4270/Service1.svc/GetData";
+		Data = '{"value": "' + value + '"}';
+		ContentType = "application/json; charset=utf-8";
+		DataType = "json"; 
+		varProcessData = true; 
+		CallService();
+	}
+	
+	function CallService() {
+		$("#log").append("<p>Called CallService</p>");
+		$.ajax({
+			type: Type,
+			url: Url,
+			data: Data,
+			contentType: ContentType,
+			dataType: DataType,
+			processdata: ProcessData,
+			success: function(msg) {
+				ServiceSucceeded(msg);
+			},
+			error: ServiceFailed
+		});
+	}
+	
+	function ServiceFailed(result) {
+		$("#log").append("<p>Service call failed: " + result.status + " " + "result.statusText</p>");
+		Type = null;
+		varUrl = null;
+		Data = null; 
+		ContentType = null;
+		DataType = null;
+		ProcessData = null;
+	}
+
+	function ServiceSucceeded(result) {
+		$("#log").append("<p>ServiceSucceeded</p>");
+		if (DataType == "json") {
+			var jsonData = JSON.stringify(result);
+			console.log(jsonData);
+			var data = JSON.parse(jsonData);
+			var ThrowQuestionResult = data.ThrowQuestionResult;
+			console.log(ThrowQuestionResult.question);
+			
+			$("#result").append("<p>"+ThrowQuestionResult.question+ "</p>");
+			
+			var answers = new Array();
+			for(var answer in ThrowQuestionResult.QuestionAnswer) //is null
+			{
+				
+			}
+		}
+	}
+
+	function ServiceFailed(xhr) {
+	$("#log").append("<p>ServiceFailed</p>");
+		$("#log").append(xhr.responseText);
+
+		if (xhr.responseText) {
+			var err = xhr.responseText;
+			if (err)
+				$("#log").append("<p>" + err + "<p>");
+			else
+				error({ Message: "Unknown server error." });
+		}
+		return;
+	}  
+
+	function getCookie(c_name)
+	{
+		var c_value = document.cookie;
+		var c_start = c_value.indexOf(" " + c_name + "=");
+		if (c_start == -1)
+		  {
+		  c_start = c_value.indexOf(c_name + "=");
+		  }
+		if (c_start == -1)
+		  {
+		  c_value = null;
+		  }
+		else
+		  {
+		  c_start = c_value.indexOf("=", c_start) + 1;
+		  var c_end = c_value.indexOf(";", c_start);
+		  if (c_end == -1)
+			{
+			c_end = c_value.length;
+			}
+		  c_value = unescape(c_value.substring(c_start,c_end));
+		  }
+		return c_value;
+	}	
+	
+	$(document).ready(
+		function() {
+			$("#log").append("<h3>LOGS</h3>");
+			$("#log").append("<p>Document ready</p>");
+			$("#result").append("<h3>Welkom "+ getCookie("username") +"</h3>");
+			GetQuestion();	
+		}
+	);            
+
+</script>
+</head>
+
+<body>
+<div id=result style="float:left;"></div>
+<div id=log style="float:right;"></div>
+
+</body>
+</html>
